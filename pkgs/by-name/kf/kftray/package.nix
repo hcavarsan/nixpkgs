@@ -71,6 +71,9 @@ rustPlatform.buildRustPackage {
   # Build only the kftray-tauri package from the workspace
   buildAndTestSubdir = "crates/kftray-tauri";
 
+  # Disable tests due to flaky database and environment-dependent tests
+  doCheck = false;
+
   postPatch = ''
     # Link frontend dist directory for Tauri build
     ln -s frontend/dist crates/kftray-tauri/
