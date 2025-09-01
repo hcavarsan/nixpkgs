@@ -1,0 +1,35 @@
+{
+  lib,
+  stdenv,
+  rustPlatform,
+  fetchFromGitHub,
+  openssl,
+}:
+
+rustPlatform.buildRustPackage rec {
+  pname = "kftui";
+  version = "v0.23.2";
+
+  src = fetchFromGitHub {
+    owner = "hcavarsan";
+    repo = "kftray";
+    rev = "v${version}";
+    hash = "sha256-DoDp5NQhk75t6wQAoVpU/+niBCNU5YG+E0WRiegIk7g=";
+  };
+
+  cargoHash = "sha256-DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD=";
+  buildInputs = [ openssl ];
+
+  env = {
+    RUSTC_BOOTSTRAP = 1;
+  };
+
+  meta = with lib; {
+    description = "A TUI and CLI to manage kubectl port-forwards" ;
+    homepage = "https://kftray.app";
+    license = lib.licenses.gpl3
+    maintainers = with maintainers; [ hcavarsan ];
+    platforms = platforms.all;
+    mainProgram = "kftui";
+  };
+}

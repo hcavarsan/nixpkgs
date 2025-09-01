@@ -1,0 +1,97 @@
+{
+  lib,
+  stdenv,
+  rustPlatform,
+  fetchFromGitHub,
+  cacert,
+  cargo-tauri,
+  desktop-file-utils,
+  glib-networking,
+  jq,
+  libayatana-appindicator,
+  librsvg,
+  libxdo,
+  makeBinaryWrapper,
+  nodejs,
+  openssl,
+  pkg-config,
+  pnpm,
+  webkitgtk_4_1,
+  wrapGAppsHook4,
+  xdg-utils,
+}:
+
+rustPlatform.buildRustPackage rec {
+  pname = "kftray";
+  version = "v0.23.2";
+
+  src = fetchFromGitHub {
+    owner = "hcavarsan";
+    repo = "kftray";
+    rev = "v${version}";
+    hash = "sha256-DoDp5NQhk75t6wQAoVpU/+niBCNU5YG+E0WRiegIk7g=";
+  };
+
+  cargoHash = "[1;33m🦀 Generating cargoHash for kftray...[0m";
+
+  pnpmDeps = pnpm.fetchDeps {
+    inherit src;
+    hash = "sha256-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=";
+  };
+
+  nativeBuildInputs = [
+    cargo-tauri.hook
+    desktop-file-utils
+    jq
+    nodejs
+    pkg-config
+    pnpm.configHook
+    wrapGAppsHook4
+  ] ++ lib.optional stdenv.isDarwin makeBinaryWrapper;
+
+  buildInputs = [
+    cacert
+    openssl
+    libxdo
+  ] ++ lib.optionals stdenv.isLinux [
+    glib-networking
+    libayatana-appindicator
+    librsvg
+    webkitgtk_4_1
+    xdg-utils
+  ];
+
+  env = {
+    RUSTC_BOOTSTRAP = 1;
+    VITE_ENV = "production";
+    TAURI_DEBUG = "false";
+  };
+
+  postInstall = ''
+    install -Dm644 $src/icon.png $out/share/icons/hicolor/512x512/apps/kftray.png
+    install -Dm644 $src/crates/kftray-tauri/icons/tray-light.png $out/share/icons/hicolor/scalable/status/kftray-tray.png
+
+    makeWrapper $out/bin/kftray $out/bin/kftray-wrapped \
+      --prefix PATH : ${lib.makeBinPath [ xdg-utils ]}
+
+    install -Dm644 - $out/share/applications/kftray.desktop <<EOF
+    [Desktop Entry]
+    Name=KFtray
+    Comment=A simple tray application to manage your Kubernetes port-forwards.
+    Exec=kftray-wrapped
+    Icon=kftray
+    Terminal=false
+    Type=Application
+    Categories=Network;System;
+    EOF
+  '';
+
+  meta = with lib; {
+    description = "A simple tray application to manage your Kubernetes port-forwards.";
+    homepage = "https://github.com/hcavarsan/kftray";
+    license = lib.licenses.gpl3
+    maintainers = with maintainers; [ hcavarsan ];
+    platforms = platforms.all;
+    mainProgram = "kftray";
+  };
+}
