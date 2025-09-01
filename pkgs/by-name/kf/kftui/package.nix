@@ -5,6 +5,7 @@
   fetchFromGitHub,
   perl,
   openssl,
+  pkg-config,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -25,7 +26,7 @@ rustPlatform.buildRustPackage rec {
   # Skip tests - requires filesystem writes
   doCheck = false;
 
-  nativeBuildInputs = [ perl ];
+  nativeBuildInputs = [ perl pkg-config ];
   buildInputs = [ openssl ];
 
   env = {
