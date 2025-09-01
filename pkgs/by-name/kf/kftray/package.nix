@@ -24,7 +24,7 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "kftray";
-  version = "v0.23.2";
+  version = "0.23.2";
 
   src = fetchFromGitHub {
     owner = "hcavarsan";
