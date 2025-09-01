@@ -37,7 +37,7 @@ rustPlatform.buildRustPackage rec {
 
   pnpmDeps = pnpm.fetchDeps {
     inherit pname src;
-    hash = if stdenv.isDarwin then "sha256-e367SyVoLpCVfE2IBf/Nuj1KXgOQJaNWzzQYyRKJDjQ=" else "sha256-hd2eKjYPaoA71nEs0qnnh0hY+LCqUVj0М0x05SqaVxc=";
+    hash = if stdenv.isDarwin then "sha256-e367SyVoLpCVfE2IBf/Nuj1KXgOQJaNWzzQYyRKJDjQ=" else "sha256-hd2eKjYPaoA71nEs0qnnh0hY+LCqUVjOM0x05SqaVxc=";
     fetcherVersion = 1;
   };
 
