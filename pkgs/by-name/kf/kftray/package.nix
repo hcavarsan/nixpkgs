@@ -77,6 +77,11 @@ rustPlatform.buildRustPackage rec {
 
   cargoBuildFlags = [ "--package" "kftray-tauri" ];
 
+  tauriBuildFlags = [
+    "--config"
+    "crates/kftray-tauri/tauri.conf.json"
+  ];
+
   preBuild = ''
     cargo build --release --bin kftray-helper
     cp target/release/kftray-helper crates/kftray-tauri/bin/kftray-helper-${stdenv.hostPlatform.rust.rustcTarget}
@@ -91,7 +96,9 @@ rustPlatform.buildRustPackage rec {
     TAURI_DEBUG = "false";
   };
 
-  postInstall = lib.optionalString stdenv.isLinux ''
+  postInstall = lib.optionalString stdenv.isDarwin ''
+    makeBinaryWrapper $out/Applications/kftray.app/Contents/MacOS/kftray $out/bin/kftray
+  '' + lib.optionalString stdenv.isLinux ''
     install -Dm644 $src/icon.png $out/share/icons/hicolor/512x512/apps/kftray.png
     install -Dm644 $src/crates/kftray-tauri/icons/tray-light.png $out/share/icons/hicolor/scalable/status/kftray-tray.png
 
@@ -116,6 +123,6 @@ rustPlatform.buildRustPackage rec {
     license = lib.licenses.gpl3;
     maintainers = with maintainers; [ hcavarsan ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
-    mainProgram = if stdenv.isDarwin then "kftray.app" else "kftray";
+    mainProgram = "kftray";
   };
 }
