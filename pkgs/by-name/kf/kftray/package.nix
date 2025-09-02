@@ -26,6 +26,22 @@
   libcanberra,
   polkit,
   xdg-utils,
+  dbus,
+  gdk-pixbuf,
+  glib,
+  gtk3,
+  libgit2,
+  libsodium,
+  libXtst,
+  libvpx,
+  libyuv,
+  libopus,
+  libaom,
+  libxkbcommon,
+  pam,
+  pango,
+  zlib,
+  zstd,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -74,6 +90,22 @@ rustPlatform.buildRustPackage rec {
     libsoup_3
     polkit
     xdg-utils
+    dbus
+    gdk-pixbuf
+    glib
+    gtk3
+    libgit2
+    libsodium
+    libXtst
+    libvpx
+    libyuv
+    libopus
+    libaom
+    libxkbcommon
+    pam
+    pango
+    zlib
+    zstd
   ];
 
   postPatch = ''
