@@ -8,6 +8,8 @@
   nodejs,
   pnpm,
   perl,
+  jq,
+  moreutils,
 
   pkg-config,
   wrapGAppsHook3,
@@ -45,9 +47,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # Copy Cargo.lock to cargoRoot
     cp Cargo.lock crates/kftray-tauri/
     
-    # Disable tauri updater
-    substituteInPlace crates/kftray-tauri/tauri.conf.json \
-      --replace-fail '"updater": {' '"updater": { "active": false,'
+    # Disable tauri updater and bundling
+    jq '.plugins.updater.endpoints = [] | .bundle.createUpdaterArtifacts = false' crates/kftray-tauri/tauri.conf.json \
+      | sponge crates/kftray-tauri/tauri.conf.json
   '';
 
   preBuild = ''
@@ -64,6 +66,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     pkg-config
     wrapGAppsHook3
     perl
+    jq
+    moreutils
   ];
 
   buildInputs = [
