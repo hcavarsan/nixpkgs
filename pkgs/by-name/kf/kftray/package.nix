@@ -9,7 +9,10 @@
   glib-networking,
   jq,
   libayatana-appindicator,
+  libdrm,
+  libGL,
   librsvg,
+  libxkbcommon,
   makeBinaryWrapper,
   moreutils,
   nodejs,
@@ -59,7 +62,10 @@ rustPlatform.buildRustPackage rec {
   ] ++ lib.optionals stdenv.isLinux [
     glib-networking
     libayatana-appindicator
+    libdrm
+    libGL
     librsvg
+    libxkbcommon
     webkitgtk_4_1
     xdg-utils
   ];
