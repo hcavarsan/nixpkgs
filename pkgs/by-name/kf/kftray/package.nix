@@ -8,6 +8,11 @@
   libappindicator-gtk3,
   gtk3,
   gsettings-desktop-schemas,
+  libgpg-error,
+  e2fsprogs,
+  libdrm,
+  mesa,
+  krb5,
 }:
 
 let
@@ -88,6 +93,11 @@ else
     buildInputs = [
       libappindicator-gtk3
       gtk3
+      libgpg-error
+      e2fsprogs
+      libdrm
+      mesa
+      krb5
     ];
 
     installPhase = ''
