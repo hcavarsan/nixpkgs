@@ -20,7 +20,7 @@
   perl,
   pkg-config,
   pnpm,
-  webkitgtk_4_0,
+  webkitgtk_4_1,
   wrapGAppsHook3,
   libcanberra,
   xdg-utils,
