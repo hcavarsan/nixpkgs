@@ -4,7 +4,10 @@
   fetchurl,
   appimageTools,
   undmg,
-  writeShellScript,
+  libappindicator-gtk3,
+  libcanberra-gtk3,
+  mesa,
+  libdrm,
 }:
 
 let
@@ -77,16 +80,11 @@ else
       ;
 
     extraPkgs = pkgs: [
-      pkgs.libappindicator-gtk3
-      pkgs.libcanberra-gtk3
-      pkgs.adwaita-icon-theme
+      libappindicator-gtk3
+      libcanberra-gtk3
+      mesa
+      libdrm
     ];
-
-    runScript = writeShellScript "kftray-wrapper" ''
-      export GTK_MODULES=""
-      export GDK_PIXBUF_MODULE_FILE=""
-      exec "$@"
-    '';
 
     extraInstallCommands =
       let
