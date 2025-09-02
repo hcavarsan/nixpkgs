@@ -80,9 +80,6 @@ rustPlatform.buildRustPackage rec {
     jq '.plugins.updater.endpoints = [] | .bundle.createUpdaterArtifacts = false' crates/kftray-tauri/tauri.conf.json \
       | sponge crates/kftray-tauri/tauri.conf.json
   '' + lib.optionalString stdenv.isLinux ''
-
-    substituteInPlace $cargoDepsCopy/libappindicator-sys-*/src/lib.rs \
-      --replace-fail "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
   '';
 
   cargoBuildFlags = [ "--package" "kftray-tauri" ];
