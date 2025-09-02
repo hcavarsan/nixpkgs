@@ -52,7 +52,7 @@ let
     version = "2.44.0";
     src = fetchurl {
       url = "https://webkitgtk.org/releases/webkitgtk-2.44.0.tar.xz";
-      hash = "sha256-OEvEOKf3J0grr8aOKIA10aFWa7ykgoaBr6mXbm7TCUM=";
+      hash = "sha256-xmUw5Bulmx7bpO6J7yCyGI4nO+0El+lQhHKePPvjDIc=";
     };
   });
 in
