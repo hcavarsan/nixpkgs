@@ -6,6 +6,9 @@
   undmg,
   makeBinaryWrapper,
   nix-update-script,
+  libayatana-appindicator,
+  libcanberra-gtk3,
+  polkit,
 }:
 
 let
@@ -76,6 +79,12 @@ else
       passthru
       meta
       ;
+
+    extraPkgs = pkgs: with pkgs; [
+      libayatana-appindicator
+      libcanberra-gtk3
+      polkit
+    ];
 
     extraInstallCommands = 
       let
