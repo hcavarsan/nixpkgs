@@ -72,15 +72,19 @@ rustPlatform.buildRustPackage rec {
     pkg-config
     pnpm.configHook
     wrapGAppsHook4
+    libcanberra
+    openssl
+    webkitgtk_4_1
+
   ] ++ lib.optional stdenv.isDarwin makeBinaryWrapper;
 
   buildInputs = [
     cacert
     openssl
-  ] ++ lib.optionals stdenv.isLinux [
     glib-networking
     libayatana-appindicator
     libdrm
+    pkg-config
     libGL
     librsvg
     webkitgtk_4_1
@@ -116,13 +120,6 @@ rustPlatform.buildRustPackage rec {
     substituteInPlace $cargoDepsCopy/libappindicator-sys-*/src/lib.rs \
       --replace-fail "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
   '';
-
-  cargoBuildFlags = [ "--package" "kftray-tauri" ];
-
-  tauriBuildFlags = [
-    "--config"
-    "crates/kftray-tauri/tauri.conf.json"
-  ];
 
   preBuild = ''
     cargo build --release --bin kftray-helper
