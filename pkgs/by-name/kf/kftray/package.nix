@@ -84,9 +84,5 @@ else
       ''
         install -Dm444 ${appimageContents}/kftray.desktop $out/share/applications/kftray.desktop
         install -Dm444 ${appimageContents}/kftray.png $out/share/pixmaps/kftray.png
-
-        substituteInPlace $out/share/applications/kftray.desktop \
-          --replace-fail 'Exec=AppRun' 'Exec=${pname}' \
-          --replace-fail 'Icon=kftray' 'Icon=${pname}'
       '';
   }
