@@ -8,8 +8,11 @@
   desktop-file-utils,
   glib-networking,
   jq,
+  at-spi2-core,
   libayatana-appindicator,
   libdrm,
+  libepoxy,
+  libgbm,
   libGL,
   librsvg,
   makeBinaryWrapper,
@@ -82,8 +85,11 @@ rustPlatform.buildRustPackage rec {
     cacert
     openssl
     glib-networking
+    at-spi2-core
     libayatana-appindicator
     libdrm
+    libepoxy
+    libgbm
     pkg-config
     libGL
     librsvg
