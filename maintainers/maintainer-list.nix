@@ -9834,6 +9834,11 @@
     github = "hacker1024";
     githubId = 20849728;
   };
+  hcavarsan = {
+    name = "Henrique Cavarsan";
+    github = "hcavarsan";
+    githubId = 30353685;
+  };
   hadilq = {
     name = "Hadi Lashkari Ghouchani";
     email = "hadilq.dev@gmail.com";
