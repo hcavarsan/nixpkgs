@@ -96,26 +96,20 @@ rustPlatform.buildRustPackage rec {
     TAURI_DEBUG = "false";
   };
 
-  postInstall = lib.optionalString stdenv.isDarwin ''
-    makeBinaryWrapper $out/Applications/kftray.app/Contents/MacOS/kftray $out/bin/kftray
-  '' + lib.optionalString stdenv.isLinux ''
-    install -Dm644 $src/icon.png $out/share/icons/hicolor/512x512/apps/kftray.png
-    install -Dm644 $src/crates/kftray-tauri/icons/tray-light.png $out/share/icons/hicolor/scalable/status/kftray-tray.png
+  postInstall =
+    lib.optionalString stdenv.hostPlatform.isDarwin ''
+      makeBinaryWrapper $out/Applications/kftray.app/Contents/MacOS/kftray $out/bin/kftray
+    ''
+    + lib.optionalString stdenv.hostPlatform.isLinux ''
+      install -Dm644 $src/icon.png $out/share/icons/hicolor/512x512/apps/kftray.png
+      install -Dm644 $src/crates/kftray-tauri/icons/tray-light.png $out/share/icons/hicolor/scalable/status/kftray-tray.png
 
-    makeWrapper $out/bin/kftray $out/bin/kftray-wrapped \
-      --prefix PATH : ${lib.makeBinPath [ xdg-utils ]}
-
-    install -Dm644 - $out/share/applications/kftray.desktop <<EOF
-    [Desktop Entry]
-    Name=KFtray
-    Comment=kubectl port-forward manager with traffic inspection, udp support, proxy connections through k8s clusters and state via local files or git repos.
-    Exec=kftray-wrapped
-    Icon=kftray
-    Terminal=false
-    Type=Application
-    Categories=Network;System;
-    EOF
-  '';
+      desktop-file-edit \
+        --set-comment "kubectl port-forward manager with traffic inspection, udp support, proxy connections through k8s clusters and state via local files or git repos." \
+        --set-key="Keywords" --set-value="kubernetes;kubectl;port-forward;" \
+        --set-key="StartupWMClass" --set-value="kftray" \
+        $out/share/applications/kftray.desktop
+    '';
 
   meta = with lib; {
     description = "kubectl port-forward manager with traffic inspection, udp support, proxy connections through k8s clusters and state via local files or git repos ";
