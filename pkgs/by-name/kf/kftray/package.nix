@@ -23,6 +23,7 @@
   pkg-config,
   pnpm,
   webkitgtk_4_1,
+  fetchurl,
   wrapGAppsHook4,
   libsoup_3,
   libcanberra,
@@ -45,6 +46,16 @@
   zlib,
   zstd,
 }:
+
+let
+  webkitgtk_2_44 = webkitgtk_4_1.overrideAttrs (old: {
+    version = "2.44.0";
+    src = fetchurl {
+      url = "https://webkitgtk.org/releases/webkitgtk-2.44.0.tar.xz";
+      hash = "sha256-OEvEOKf3J0grr8aOKIA10aFWa7ykgoaBr6mXbm7TCUM=";
+    };
+  });
+in
 
 rustPlatform.buildRustPackage rec {
   pname = "kftray";
@@ -93,7 +104,7 @@ rustPlatform.buildRustPackage rec {
     pkg-config
     libGL
     librsvg
-    webkitgtk_4_1
+    webkitgtk_2_44
     libcanberra
     libsoup_3
     polkit
