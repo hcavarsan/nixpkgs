@@ -4,6 +4,7 @@
   fetchurl,
   appimageTools,
   undmg,
+  writeShellScript,
 }:
 
 let
@@ -80,6 +81,12 @@ else
       pkgs.libcanberra-gtk3
       pkgs.adwaita-icon-theme
     ];
+
+    runScript = writeShellScript "kftray-wrapper" ''
+      export GTK_MODULES=""
+      export GDK_PIXBUF_MODULE_FILE=""
+      exec "$@"
+    '';
 
     extraInstallCommands =
       let
