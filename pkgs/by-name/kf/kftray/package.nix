@@ -81,9 +81,7 @@ else
 
     extraPkgs = pkgs: [
       libappindicator-gtk3
-      libcanberra-gtk3
-      mesa
-      libdrm
+      makeWrapper
     ];
 
     extraInstallCommands =
@@ -93,5 +91,9 @@ else
       ''
         install -Dm444 ${appimageContents}/kftray.desktop $out/share/applications/kftray.desktop
         install -Dm444 ${appimageContents}/kftray.png $out/share/pixmaps/kftray.png
+        
+        wrapProgram $out/bin/kftray \
+          --set APPIMAGE_EXTRACT_AND_RUN 1 \
+          --unset GTK_MODULES
       '';
   }
