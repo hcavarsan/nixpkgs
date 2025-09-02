@@ -4,11 +4,6 @@
   fetchurl,
   appimageTools,
   undmg,
-  makeBinaryWrapper,
-  nix-update-script,
-  libayatana-appindicator,
-  libcanberra-gtk3,
-  polkit,
 }:
 
 let
@@ -80,13 +75,7 @@ else
       meta
       ;
 
-    extraPkgs = pkgs: with pkgs; [
-      libayatana-appindicator
-      libcanberra-gtk3
-      polkit
-    ];
-
-    extraInstallCommands = 
+    extraInstallCommands =
       let
         appimageContents = appimageTools.extractType2 { inherit pname version src; };
       in
