@@ -6,6 +6,7 @@
   cargo-tauri,
   nodejs,
   pnpm,
+  perl,
 
   pkg-config,
   wrapGAppsHook3,
@@ -54,6 +55,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     cargo-tauri.hook
     pkg-config
     wrapGAppsHook3
+    perl
   ];
 
   buildInputs = [
