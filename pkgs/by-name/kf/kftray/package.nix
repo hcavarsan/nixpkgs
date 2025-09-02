@@ -49,6 +49,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --replace-fail '"updater": {' '"updater": { "active": false,'
   '';
 
+  preBuild = ''
+    # Build kftray-helper sidecar binary
+    cargo build --release --bin kftray-helper
+    mkdir -p crates/kftray-tauri/bin
+    cp target/release/kftray-helper crates/kftray-tauri/bin/kftray-helper-${stdenv.hostPlatform.rust.rustcTarget}
+  '';
+
   nativeBuildInputs = [
     pnpm.configHook
     nodejs
