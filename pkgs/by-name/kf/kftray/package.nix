@@ -1,182 +1,92 @@
 {
   lib,
   stdenv,
-  rustPlatform,
-  fetchFromGitHub,
-  cacert,
-  cargo-tauri,
-  desktop-file-utils,
-  glib-networking,
-  jq,
-  at-spi2-core,
-  libayatana-appindicator,
-  libdrm,
-  libepoxy,
-  libgbm,
-  libGL,
-  librsvg,
-  makeBinaryWrapper,
-  moreutils,
-  nodejs,
-  openssl,
-  perl,
-  pkg-config,
-  pnpm,
-  webkitgtk_4_1,
   fetchurl,
-  wrapGAppsHook4,
-  libsoup_3,
-  libcanberra,
-  polkit,
-  xdg-utils,
-  dbus,
-  gdk-pixbuf,
-  glib,
-  gtk3,
-  libgit2,
-  libsodium,
-  libXtst,
-  libvpx,
-  libyuv,
-  libopus,
-  libaom,
-  libxkbcommon,
-  pam,
-  pango,
-  zlib,
-  zstd,
+  appimageTools,
+  undmg,
+  makeBinaryWrapper,
+  nix-update-script,
 }:
 
 let
-  webkitgtk_2_44 = webkitgtk_4_1.overrideAttrs (old: {
-    version = "2.44.0";
-    src = fetchurl {
-      url = "https://webkitgtk.org/releases/webkitgtk-2.44.0.tar.xz";
-      hash = "sha256-xmUw5Bulmx7bpO6J7yCyGI4nO+0El+lQhHKePPvjDIc=";
-    };
-  });
-in
-
-rustPlatform.buildRustPackage rec {
   pname = "kftray";
   version = "0.23.2";
 
-  src = fetchFromGitHub {
-    owner = "hcavarsan";
-    repo = "kftray";
-    rev = "v${version}";
-    hash = "sha256-DoDp5NQhk75t6wQAoVpU/+niBCNU5YG+E0WRiegIk7g=";
-  };
+  src = fetchurl (
+    {
+      x86_64-linux = {
+        url = "https://github.com/hcavarsan/kftray/releases/download/v${version}/kftray_${version}_amd64.AppImage";
+        hash = "sha256-GfHWyWo0sd4ruwEcmm0jEhih0e5ST/yVRKzjIyfLVxI=";
+      };
+      aarch64-linux = {
+        url = "https://github.com/hcavarsan/kftray/releases/download/v${version}/kftray_${version}_aarch64.AppImage";
+        hash = "sha256-ySTr7Wjiq8vP2KdODjuGbNpgWFrlQXzc2cUySPbsGow=";
+      };
+      x86_64-darwin = {
+        url = "https://github.com/hcavarsan/kftray/releases/download/v${version}/kftray_${version}_universal.dmg";
+        hash = "sha256-0mm4gL2zJXX1OYwvpSD8b5oZl13nTvxiu6l3NZ3nIgA=";
+      };
+      aarch64-darwin = {
+        url = "https://github.com/hcavarsan/kftray/releases/download/v${version}/kftray_${version}_universal.dmg";
+        hash = "sha256-0mm4gL2zJXX1OYwvpSD8b5oZl13nTvxiu6l3NZ3nIgA=";
+      };
+    }.${stdenv.system} or (throw "Unsupported system: ${stdenv.system}")
+  );
 
-  cargoHash = "sha256-8csv47TGYWTF5ysFn+lxAzMViViAag4vUunUpCTYUh8=";
-
-  pnpmDeps = pnpm.fetchDeps {
-    inherit pname src;
-    hash = if stdenv.isDarwin then "sha256-e367SyVoLpCVfE2IBf/Nuj1KXgOQJaNWzzQYyRKJDjQ=" else "sha256-hd2eKjYPaoA71nEs0qnnh0hY+LCqUVj0MOx05SqaVxc=";
-    fetcherVersion = 1;
-  };
-
-  nativeBuildInputs = [
-    cargo-tauri.hook
-    desktop-file-utils
-    jq
-    moreutils
-    nodejs
-    perl
-    pkg-config
-    pnpm.configHook
-    wrapGAppsHook4
-    libcanberra
-    openssl
-    webkitgtk_4_1
-
-  ] ++ lib.optional stdenv.isDarwin makeBinaryWrapper;
-
-  buildInputs = [
-    cacert
-    openssl
-    glib-networking
-    at-spi2-core
-    libayatana-appindicator
-    libdrm
-    libepoxy
-    libgbm
-    pkg-config
-    libGL
-    librsvg
-    webkitgtk_2_44
-    libcanberra
-    libsoup_3
-    polkit
-    xdg-utils
-    dbus
-    gdk-pixbuf
-    glib
-    gtk3
-    libgit2
-    libsodium
-    libXtst
-    libvpx
-    libyuv
-    libopus
-    libaom
-    libxkbcommon
-    pam
-    pango
-    zlib
-    zstd
-  ];
-
-  postPatch = ''
-    mkdir -p crates/kftray-tauri/bin
-
-    jq '.plugins.updater.endpoints = [] | .bundle.createUpdaterArtifacts = false' crates/kftray-tauri/tauri.conf.json \
-      | sponge crates/kftray-tauri/tauri.conf.json
-  '' + lib.optionalString stdenv.isLinux ''
-
-    substituteInPlace $cargoDepsCopy/libappindicator-sys-*/src/lib.rs \
-      --replace-fail "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
-  '';
-
-  preBuild = ''
-    cargo build --release --bin kftray-helper
-    cp target/release/kftray-helper crates/kftray-tauri/bin/kftray-helper-${stdenv.hostPlatform.rust.rustcTarget}
-  '';
-
-  # Skip tests - requires filesystem writes and system commands
-  doCheck = false;
-
-  env = {
-    RUSTC_BOOTSTRAP = 1;
-    VITE_ENV = "production";
-    TAURI_DEBUG = "false";
-  };
-
-  postInstall =
-    lib.optionalString stdenv.hostPlatform.isDarwin ''
-      makeBinaryWrapper $out/Applications/kftray.app/Contents/MacOS/kftray $out/bin/kftray
-    ''
-    + lib.optionalString stdenv.hostPlatform.isLinux ''
-      install -Dm644 $src/icon.png $out/share/icons/hicolor/512x512/apps/kftray.png
-      install -Dm644 $src/crates/kftray-tauri/icons/tray-light.png $out/share/icons/hicolor/scalable/status/kftray-tray.png
-
-      desktop-file-edit \
-        --set-comment "kubectl port-forward manager with traffic inspection, udp support, proxy connections through k8s clusters and state via local files or git repos." \
-        --set-key="Keywords" --set-value="kubernetes;kubectl;port-forward;" \
-        --set-key="StartupWMClass" --set-value="kftray" \
-        $out/share/applications/kftray.desktop
-    '';
-
-  meta = with lib; {
+  meta = {
     description = "kubectl port-forward manager with traffic inspection, udp support, proxy connections through k8s clusters and state via local files or git repos";
-    longDescription = ''
-      Note: On non-NixOS Linux distributions, you may need to run this application with nixGL due to graphics driver compatibility issues.
-      Install nixGL and run: nixGL kftray
-    '';
     homepage = "https://github.com/hcavarsan/kftray";
     license = lib.licenses.gpl3;
-    maintainers = with maintainers; [ hcavarsan ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    maintainers = with lib.maintainers; [ hcavarsan ];
+    platforms = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
     mainProgram = "kftray";
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
-}
+
+  passthru.updateScript = ./update.sh;
+in
+
+if stdenv.hostPlatform.isDarwin then
+  stdenv.mkDerivation {
+    inherit
+      pname
+      version
+      src
+      passthru
+      meta
+      ;
+
+    sourceRoot = ".";
+
+    nativeBuildInputs = [ undmg ];
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p "$out/Applications"
+      mv kftray.app $out/Applications/
+      runHook postInstall
+    '';
+  }
+else
+  appimageTools.wrapType2 {
+    inherit
+      pname
+      version
+      src
+      passthru
+      meta
+      ;
+
+    extraInstallCommands = 
+      let
+        appimageContents = appimageTools.extractType2 { inherit pname version src; };
+      in
+      ''
+        install -Dm444 ${appimageContents}/kftray.desktop $out/share/applications/kftray.desktop
+        install -Dm444 ${appimageContents}/kftray.png $out/share/pixmaps/kftray.png
+
+        substituteInPlace $out/share/applications/kftray.desktop \
+          --replace-fail 'Exec=AppRun' 'Exec=${pname}' \
+          --replace-fail 'Icon=kftray' 'Icon=${pname}'
+      '';
+  }
