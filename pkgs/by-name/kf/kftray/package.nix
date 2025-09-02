@@ -77,6 +77,8 @@ else
 
     extraPkgs = pkgs: [
       pkgs.libappindicator-gtk3
+      pkgs.libcanberra-gtk3
+      pkgs.adwaita-icon-theme
     ];
 
     extraInstallCommands =
