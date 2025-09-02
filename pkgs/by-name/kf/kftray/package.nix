@@ -20,8 +20,8 @@
   pkg-config,
   pnpm,
   webkitgtk_4_1,
-  wrapGAppsHook3,
-  libsoup_3,
+  wrapGAppsHook4,
+  libsoup,
   libcanberra,
   polkit,
   xdg-utils,
@@ -71,7 +71,7 @@ rustPlatform.buildRustPackage rec {
     perl
     pkg-config
     pnpm.configHook
-    wrapGAppsHook3
+    wrapGAppsHook4
   ] ++ lib.optional stdenv.isDarwin makeBinaryWrapper;
 
   buildInputs = [
@@ -85,7 +85,7 @@ rustPlatform.buildRustPackage rec {
     librsvg
     webkitgtk_4_1
     libcanberra
-    libsoup_3
+    libsoup
     polkit
     xdg-utils
     dbus
