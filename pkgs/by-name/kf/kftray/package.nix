@@ -31,6 +31,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pnpmDeps = pnpm.fetchDeps {
     inherit (finalAttrs) pname src;
     hash = "sha256-hd2eKjYPaoA71nEs0qnnh0hY+LCqUVj0MOx05SqaVxc=";
+    fetcherVersion = 1;
   };
 
   cargoRoot = "crates/kftray-tauri";
