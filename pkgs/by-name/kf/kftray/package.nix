@@ -12,7 +12,6 @@
   libdrm,
   libGL,
   librsvg,
-  libxkbcommon,
   makeBinaryWrapper,
   moreutils,
   nodejs,
@@ -84,7 +83,6 @@ rustPlatform.buildRustPackage rec {
     libdrm
     libGL
     librsvg
-    libxkbcommon
     webkitgtk_4_1
     libcanberra
     libsoup_3
