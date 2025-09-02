@@ -40,6 +40,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoHash = "sha256-8csv47TGYWTF5ysFn+lxAzMViViAag4vUunUpCTYUh8=";
 
   postPatch = ''
+    # Copy Cargo.lock to cargoRoot
+    cp Cargo.lock crates/kftray-tauri/
+    
     # Disable tauri updater
     substituteInPlace crates/kftray-tauri/tauri.conf.json \
       --replace-fail '"updater": {' '"updater": { "active": false,'
