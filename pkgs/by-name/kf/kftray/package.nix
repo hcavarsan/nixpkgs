@@ -75,6 +75,10 @@ else
       meta
       ;
 
+    extraPkgs = pkgs: [
+      pkgs.libappindicator-gtk3
+    ];
+
     extraInstallCommands =
       let
         appimageContents = appimageTools.extractType2 { inherit pname version src; };
