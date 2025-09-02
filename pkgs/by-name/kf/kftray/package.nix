@@ -5,8 +5,7 @@
 
   cargo-tauri,
   nodejs,
-  npmHooks,
-  fetchNpmDeps,
+  pnpm,
 
   pkg-config,
   wrapGAppsHook3,
@@ -29,9 +28,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-DoDp5NQhk75t6wQAoVpU/+niBCNU5YG+E0WRiegIk7g=";
   };
 
-  npmDeps = fetchNpmDeps {
-    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
-    inherit (finalAttrs) src;
+  pnpmDeps = pnpm.fetchDeps {
+    inherit (finalAttrs) pname src;
     hash = "sha256-hd2eKjYPaoA71nEs0qnnh0hY+LCqUVj0MOx05SqaVxc=";
   };
 
@@ -47,7 +45,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   '';
 
   nativeBuildInputs = [
-    npmHooks.npmConfigHook
+    pnpm.configHook
     nodejs
     cargo-tauri.hook
     pkg-config
