@@ -1,95 +1,84 @@
 {
   lib,
-  stdenv,
-  fetchurl,
-  appimageTools,
-  undmg,
-  libappindicator-gtk3,
-  gtk4,
-  graphene,
+  fetchFromGitHub,
+  rustPlatform,
+
+  cargo-tauri,
+  nodejs,
+  npmHooks,
+  fetchNpmDeps,
+
+  pkg-config,
+  wrapGAppsHook3,
+
+  openssl,
+  webkitgtk_4_1,
+  glib-networking,
+  libappindicator,
+  nix-update-script,
 }:
 
-let
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "kftray";
   version = "0.23.2";
 
-  src = fetchurl (
-    {
-      x86_64-linux = {
-        url = "https://github.com/hcavarsan/kftray/releases/download/v${version}/kftray_${version}_amd64.AppImage";
-        hash = "sha256-GfHWyWo0sd4ruwEcmm0jEhih0e5ST/yVRKzjIyfLVxI=";
-      };
-      aarch64-linux = {
-        url = "https://github.com/hcavarsan/kftray/releases/download/v${version}/kftray_${version}_aarch64.AppImage";
-        hash = "sha256-ySTr7Wjiq8vP2KdODjuGbNpgWFrlQXzc2cUySPbsGow=";
-      };
-      x86_64-darwin = {
-        url = "https://github.com/hcavarsan/kftray/releases/download/v${version}/kftray_${version}_universal.dmg";
-        hash = "sha256-0mm4gL2zJXX1OYwvpSD8b5oZl13nTvxiu6l3NZ3nIgA=";
-      };
-      aarch64-darwin = {
-        url = "https://github.com/hcavarsan/kftray/releases/download/v${version}/kftray_${version}_universal.dmg";
-        hash = "sha256-0mm4gL2zJXX1OYwvpSD8b5oZl13nTvxiu6l3NZ3nIgA=";
-      };
-    }.${stdenv.system} or (throw "Unsupported system: ${stdenv.system}")
-  );
+  src = fetchFromGitHub {
+    owner = "hcavarsan";
+    repo = "kftray";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-DoDp5NQhk75t6wQAoVpU/+niBCNU5YG+E0WRiegIk7g=";
+  };
+
+  npmDeps = fetchNpmDeps {
+    name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+    inherit (finalAttrs) src;
+    hash = "sha256-hd2eKjYPaoA71nEs0qnnh0hY+LCqUVj0MOx05SqaVxc=";
+  };
+
+  cargoRoot = "crates/kftray-tauri";
+  buildAndTestSubdir = finalAttrs.cargoRoot;
+
+  cargoHash = "sha256-8csv47TGYWTF5ysFn+lxAzMViViAag4vUunUpCTYUh8=";
+
+  postPatch = ''
+    # Disable tauri updater
+    substituteInPlace crates/kftray-tauri/tauri.conf.json \
+      --replace-fail '"updater": {' '"updater": { "active": false,'
+  '';
+
+  nativeBuildInputs = [
+    npmHooks.npmConfigHook
+    nodejs
+    cargo-tauri.hook
+    pkg-config
+    wrapGAppsHook3
+  ];
+
+  buildInputs = [
+    openssl
+    webkitgtk_4_1
+    glib-networking
+    libappindicator
+  ];
+
+  # Skip tests - requires filesystem writes and system commands
+  doCheck = false;
+
+  dontWrapGApps = true;
+
+  postInstall = ''
+    wrapProgram $out/bin/kftray \
+      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libappindicator ]}
+  '';
+
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "kubectl port-forward manager with traffic inspection, udp support, proxy connections through k8s clusters and state via local files or git repos";
     homepage = "https://github.com/hcavarsan/kftray";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ hcavarsan ];
-    platforms = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "kftray";
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
-
-  passthru.updateScript = ./update.sh;
-in
-
-if stdenv.hostPlatform.isDarwin then
-  stdenv.mkDerivation {
-    inherit
-      pname
-      version
-      src
-      passthru
-      meta
-      ;
-
-    sourceRoot = ".";
-
-    nativeBuildInputs = [ undmg ];
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p "$out/Applications"
-      mv kftray.app $out/Applications/
-      runHook postInstall
-    '';
-  }
-else
-  appimageTools.wrapType2 {
-    inherit
-      pname
-      version
-      src
-      passthru
-      meta
-      ;
-
-    extraPkgs = pkgs: [
-      pkgs.libappindicator-gtk3
-      pkgs.gtk4
-      pkgs.graphene
-    ];
-
-    extraInstallCommands =
-      let
-        appimageContents = appimageTools.extractType2 { inherit pname version src; };
-      in
-      ''
-        install -Dm444 ${appimageContents}/usr/share/applications/kftray.desktop $out/share/applications/kftray.desktop
-        install -Dm444 ${appimageContents}/usr/share/icons/hicolor/256x256@2/apps/kftray.png $out/share/pixmaps/kftray.png
-      '';
-  }
+})
