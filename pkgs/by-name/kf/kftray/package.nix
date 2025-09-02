@@ -117,22 +117,23 @@ else
       export XDG_DATA_DIRS="${gsettings-desktop-schemas}/share/gsettings-schemas/${gsettings-desktop-schemas.name}:${gtk3}/share/gsettings-schemas/${gtk3.name}:\$XDG_DATA_DIRS"
       export GTK_MODULES=""
       
-      exec "$out/app/kftray" "\$@"
+      exec "$out/app/usr/bin/kftray" "\$@"
       EOF
 
       chmod +x bin/kftray
 
-      # Install desktop file and icon if they exist
-      if [ -f app/kftray.desktop ]; then
+      # Install desktop file and icon
+      if [ -f app/usr/share/applications/kftray.desktop ]; then
         mkdir -p share/applications
-        cp app/kftray.desktop share/applications/
+        cp app/usr/share/applications/kftray.desktop share/applications/
         substituteInPlace share/applications/kftray.desktop \
           --replace-quiet 'Exec=AppRun' 'Exec=${pname}'
       fi
       
-      if [ -f app/kftray.png ]; then
+      # Install icon (use the 256x256 version)
+      if [ -f app/usr/share/icons/hicolor/256x256@2/apps/kftray.png ]; then
         mkdir -p share/pixmaps
-        cp app/kftray.png share/pixmaps/
+        cp app/usr/share/icons/hicolor/256x256@2/apps/kftray.png share/pixmaps/kftray.png
       fi
     '';
   }
