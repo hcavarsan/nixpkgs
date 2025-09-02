@@ -4,10 +4,10 @@
   fetchurl,
   appimageTools,
   undmg,
+  autoPatchelfHook,
   libappindicator-gtk3,
-  libcanberra-gtk3,
-  mesa,
-  libdrm,
+  gtk3,
+  gsettings-desktop-schemas,
 }:
 
 let
@@ -70,30 +70,59 @@ if stdenv.hostPlatform.isDarwin then
     '';
   }
 else
-  appimageTools.wrapType2 {
-    inherit
-      pname
-      version
-      src
-      passthru
-      meta
-      ;
+  let
+    appimageContents = appimageTools.extractType2 { inherit pname version src; };
+  in
+  stdenv.mkDerivation {
+    inherit pname version passthru meta;
 
-    extraPkgs = pkgs: [
-      libappindicator-gtk3
-      pkgs.makeWrapper
+    src = appimageContents;
+
+    dontConfigure = true;
+    dontBuild = true;
+
+    nativeBuildInputs = [
+      autoPatchelfHook
     ];
 
-    extraInstallCommands =
-      let
-        appimageContents = appimageTools.extractType2 { inherit pname version src; };
-      in
-      ''
-        install -Dm444 ${appimageContents}/kftray.desktop $out/share/applications/kftray.desktop
-        install -Dm444 ${appimageContents}/kftray.png $out/share/pixmaps/kftray.png
-        
-        wrapProgram $out/bin/kftray \
-          --set APPIMAGE_EXTRACT_AND_RUN 1 \
-          --unset GTK_MODULES
-      '';
+    buildInputs = [
+      libappindicator-gtk3
+      gtk3
+    ];
+
+    installPhase = ''
+      mkdir "$out"
+      cp -ar . "$out/app"
+      cd "$out"
+
+      # Remove the AppImage runner
+      rm -f app/AppRun
+
+      # Create bin directory and main executable
+      mkdir bin
+      
+      cat > bin/kftray <<EOF
+      #! $SHELL -e
+      
+      export XDG_DATA_DIRS="${gsettings-desktop-schemas}/share/gsettings-schemas/${gsettings-desktop-schemas.name}:${gtk3}/share/gsettings-schemas/${gtk3.name}:\$XDG_DATA_DIRS"
+      export GTK_MODULES=""
+      
+      exec "$out/app/kftray" "\$@"
+      EOF
+
+      chmod +x bin/kftray
+
+      # Install desktop file and icon if they exist
+      if [ -f app/kftray.desktop ]; then
+        mkdir -p share/applications
+        cp app/kftray.desktop share/applications/
+        substituteInPlace share/applications/kftray.desktop \
+          --replace-quiet 'Exec=AppRun' 'Exec=${pname}'
+      fi
+      
+      if [ -f app/kftray.png ]; then
+        mkdir -p share/pixmaps
+        cp app/kftray.png share/pixmaps/
+      fi
+    '';
   }
