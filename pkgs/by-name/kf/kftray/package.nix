@@ -20,8 +20,9 @@
   perl,
   pkg-config,
   pnpm,
-  webkitgtk_4_1,
-  wrapGAppsHook4,
+  webkitgtk_4_0,
+  wrapGAppsHook3,
+  libcanberra,
   xdg-utils,
 }:
 
@@ -53,7 +54,7 @@ rustPlatform.buildRustPackage rec {
     perl
     pkg-config
     pnpm.configHook
-    wrapGAppsHook4
+    wrapGAppsHook3
   ] ++ lib.optional stdenv.isDarwin makeBinaryWrapper;
 
   buildInputs = [
@@ -66,7 +67,8 @@ rustPlatform.buildRustPackage rec {
     libGL
     librsvg
     libxkbcommon
-    webkitgtk_4_1
+    webkitgtk_4_0
+    libcanberra
     xdg-utils
   ];
 
@@ -118,7 +120,11 @@ rustPlatform.buildRustPackage rec {
     '';
 
   meta = with lib; {
-    description = "kubectl port-forward manager with traffic inspection, udp support, proxy connections through k8s clusters and state via local files or git repos ";
+    description = "kubectl port-forward manager with traffic inspection, udp support, proxy connections through k8s clusters and state via local files or git repos";
+    longDescription = ''
+      Note: On non-NixOS Linux distributions, you may need to run this application with nixGL due to graphics driver compatibility issues.
+      Install nixGL and run: nixGL kftray
+    '';
     homepage = "https://github.com/hcavarsan/kftray";
     license = lib.licenses.gpl3;
     maintainers = with maintainers; [ hcavarsan ];
