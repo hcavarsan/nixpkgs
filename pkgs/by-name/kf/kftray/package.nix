@@ -22,6 +22,7 @@
   pnpm,
   webkitgtk_4_1,
   wrapGAppsHook3,
+  libsoup_3,
   libcanberra,
   xdg-utils,
 }:
@@ -67,8 +68,9 @@ rustPlatform.buildRustPackage rec {
     libGL
     librsvg
     libxkbcommon
-    webkitgtk_4_0
+    webkitgtk_4_1
     libcanberra
+    libsoup_3
     xdg-utils
   ];
 
