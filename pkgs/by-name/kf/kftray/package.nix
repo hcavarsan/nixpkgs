@@ -81,7 +81,7 @@ else
 
     extraPkgs = pkgs: [
       libappindicator-gtk3
-      makeWrapper
+      pkgs.makeWrapper
     ];
 
     extraInstallCommands =
