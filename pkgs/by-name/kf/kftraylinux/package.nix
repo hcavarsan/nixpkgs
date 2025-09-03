@@ -43,15 +43,18 @@ in appimageTools.wrapType2 {
     install -m 444 -D ${appimageContents}/kftray.png \
       $out/share/icons/hicolor/512x512/apps/kftraylinux.png
     
-    # Fix desktop file - set WEBKIT_DISABLE_COMPOSITING_MODE directly in Exec line like semtex example
+    # Fix desktop file - comprehensive WebKit fixes like semtex example  
     substituteInPlace $out/share/applications/kftraylinux.desktop \
-      --replace-warn 'Exec=kftray' 'Exec=env WEBKIT_DISABLE_COMPOSITING_MODE=1 LD_LIBRARY_PATH=${lib.makeLibraryPath [ libayatana-appindicator ]}:$LD_LIBRARY_PATH ${pname}' \
+      --replace-warn 'Exec=kftray' 'Exec=env WEBKIT_DISABLE_COMPOSITING_MODE=1 WEBKIT_DISABLE_DMABUF_RENDERER=1 GDK_BACKEND=x11 LD_LIBRARY_PATH=${lib.makeLibraryPath [ libayatana-appindicator ]}:$LD_LIBRARY_PATH ${pname}' \
       --replace-warn 'Name=kftray' 'Name=KFtray Linux' \
       --replace-warn 'Icon=kftray' 'Icon=kftraylinux'
 
-    # Also fix the binary wrapper itself for command line usage
+    # Also fix the binary wrapper itself for command line usage - comprehensive WebKit fixes
     wrapProgram $out/bin/kftraylinux \
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
+      --set WEBKIT_DISABLE_DMABUF_RENDERER 1 \
+      --set GDK_BACKEND x11 \
+      --unset WAYLAND_DISPLAY \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libayatana-appindicator ]}"
   '';
 
