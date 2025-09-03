@@ -27,6 +27,7 @@
   libdrm,
   libgbm,
   mesa,
+  addDriverRunpath,
   nix-update-script,
 }:
 
@@ -77,6 +78,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     perl
     jq
     moreutils
+    addDriverRunpath
   ];
 
   buildInputs = [
@@ -105,6 +107,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   postInstall = ''
     wrapProgram $out/bin/kftray \
+      --prefix LD_LIBRARY_PATH : ${addDriverRunpath.driverLink}/lib \
       --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libappindicator ]} \
       --unset GTK_MODULES \
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
@@ -115,6 +118,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   meta = {
     description = "kubectl port-forward manager with traffic inspection, udp support, proxy connections through k8s clusters and state via local files or git repos";
+    longDescription = ''
+      kubectl port-forward manager with a user-friendly interface for managing multiple port-forward configurations.
+      Supports traffic inspection, UDP forwarding, and proxy connections through Kubernetes clusters.
+    '';
     homepage = "https://github.com/hcavarsan/kftray";
     license = lib.licenses.gpl3;
     maintainers = with lib.maintainers; [ hcavarsan ];
