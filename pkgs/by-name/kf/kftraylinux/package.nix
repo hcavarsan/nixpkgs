@@ -45,7 +45,7 @@ in appimageTools.wrapType2 {
     
     # Fix desktop file - set WEBKIT_DISABLE_COMPOSITING_MODE directly in Exec line like semtex example
     substituteInPlace $out/share/applications/kftraylinux.desktop \
-      --replace-warn 'Exec=AppRun' 'Exec=env WEBKIT_DISABLE_COMPOSITING_MODE=1 LD_LIBRARY_PATH=${lib.makeLibraryPath [ libayatana-appindicator ]}:$LD_LIBRARY_PATH ${pname}' \
+      --replace-warn 'Exec=kftray' 'Exec=env WEBKIT_DISABLE_COMPOSITING_MODE=1 LD_LIBRARY_PATH=${lib.makeLibraryPath [ libayatana-appindicator ]}:$LD_LIBRARY_PATH ${pname}' \
       --replace-warn 'Name=kftray' 'Name=KFtray Linux' \
       --replace-warn 'Icon=kftray' 'Icon=kftraylinux'
 
