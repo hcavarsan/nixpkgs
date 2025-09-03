@@ -82,9 +82,11 @@ in appimageTools.wrapType2 {
   multiArch = true;
 
   extraInstallCommands = ''
-    # Rename binary to avoid conflicts with original kftray
-    mv $out/bin/${pname}-${version} $out/bin/${pname}
+    # List what's actually in the bin directory for debugging
+    echo "Contents of $out/bin/:"
+    ls -la $out/bin/
     
+    # The binary should be named just 'kftraylinux' with appimageTools.wrapType2
     # Install desktop file and icon (following working v1 example)
     install -Dm444 ${appimageContents}/kftray.desktop $out/share/applications/kftraylinux.desktop
     install -Dm444 ${appimageContents}/kftray.png $out/share/pixmaps/kftraylinux.png
