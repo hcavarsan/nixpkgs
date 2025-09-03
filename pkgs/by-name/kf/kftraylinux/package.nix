@@ -1,26 +1,8 @@
 {
   lib,
-  stdenv,
   fetchurl,
   appimageTools,
   makeWrapper,
-  autoPatchelfHook,
-  # Tauri v2 dependencies from wiki
-  at-spi2-atk,
-  atkmm,
-  cairo,
-  gdk-pixbuf,
-  glib,
-  gtk3,
-  harfbuzz,
-  libayatana-appindicator,
-  libcanberra-gtk3,
-  librsvg,
-  libsoup_3,
-  libthai,
-  openssl,
-  pango,
-  webkitgtk_4_1,
   nix-update-script,
 }:
 
@@ -49,59 +31,23 @@ let
 in appimageTools.wrapType2 {
   inherit pname version src;
 
-  nativeBuildInputs = [ 
-    makeWrapper 
-    autoPatchelfHook 
-  ];
-
-  buildInputs = [
-    glib
-    libayatana-appindicator
-    libcanberra-gtk3
-  ];
-
-  extraPkgs = pkgs: with pkgs; [
-    # Tauri v2 dependencies (following wiki recommendations)
-    at-spi2-atk
-    atkmm
-    cairo
-    gdk-pixbuf
-    glib
-    gtk3
-    harfbuzz
-    libayatana-appindicator
-    libcanberra-gtk3
-    librsvg
-    libsoup_3
-    libthai
-    openssl
-    pango
-    webkitgtk_4_1
-  ];
-
-  multiArch = true;
+  nativeBuildInputs = [ makeWrapper ];
 
   extraInstallCommands = ''
-    # List what's actually in the bin directory for debugging
-    echo "Contents of $out/bin/:"
-    ls -la $out/bin/
-    
-    # The binary should be named just 'kftraylinux' with appimageTools.wrapType2
-    # Install desktop file and icon (following working v1 example)
-    install -Dm444 ${appimageContents}/kftray.desktop $out/share/applications/kftraylinux.desktop
-    install -Dm444 ${appimageContents}/kftray.png $out/share/pixmaps/kftraylinux.png
+    # Install desktop file and icon (following Caido pattern)
+    install -m 444 -D ${appimageContents}/kftray.desktop $out/share/applications/kftraylinux.desktop
+    install -m 444 -D ${appimageContents}/kftray.png \
+      $out/share/icons/hicolor/512x512/apps/kftraylinux.png
     
     # Fix desktop file to point to our binary
     substituteInPlace $out/share/applications/kftraylinux.desktop \
-      --replace 'Exec=AppRun' "Exec=$out/bin/${pname}" \
-      --replace 'Name=kftray' 'Name=KFtray Linux' \
-      --replace 'Icon=kftray' 'Icon=kftraylinux'
+      --replace-warn 'Exec=AppRun' 'Exec=${pname}' \
+      --replace-warn 'Name=kftray' 'Name=KFtray Linux' \
+      --replace-warn 'Icon=kftray' 'Icon=kftraylinux'
 
-    # Wrap with proper library paths and Wayland/X11 support
+    # Follow Caido/Session-desktop wrapper pattern
     wrapProgram $out/bin/kftraylinux \
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
-      --unset GTK_MODULES \
-      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libayatana-appindicator glib ]}" \
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
   '';
 
@@ -115,6 +61,8 @@ in appimageTools.wrapType2 {
       
       This is the AppImage version of kftray, packaged for easy deployment without building from source.
       Built with Tauri v2 for improved performance and modern web technologies.
+      
+      Note: GTK module warnings and Mesa messages are harmless and can be ignored.
     '';
     homepage = "https://github.com/hcavarsan/kftray";
     downloadPage = "https://github.com/hcavarsan/kftray/releases";
