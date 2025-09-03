@@ -38,6 +38,7 @@
   atkmm,
 
   addDriverRunpath,
+  autoPatchelfHook,
   nix-update-script,
 }:
 
@@ -97,6 +98,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     jq
     moreutils
     addDriverRunpath
+    autoPatchelfHook
   ];
 
 
@@ -140,6 +142,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
       --set GDK_BACKEND "x11"
   '';
 
+  postFixup = ''
+    # Manually add driver runpath since the hook may not work with wrapProgram
+    addDriverRunpath $out/bin/kftray
+  '';
+
   passthru.updateScript = nix-update-script { };
 
   meta = {
@@ -147,6 +154,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     longDescription = ''
       kubectl port-forward manager with a user-friendly interface for managing multiple port-forward configurations.
       Supports traffic inspection, UDP forwarding, and proxy connections through Kubernetes clusters.
+      
+      Note: On non-NixOS Linux distributions, this application may require nixGL due to WebKit EGL context issues.
+      If the application fails to start, install nixGL and run: nixGL kftray
     '';
     homepage = "https://github.com/hcavarsan/kftray";
     license = lib.licenses.gpl3;
