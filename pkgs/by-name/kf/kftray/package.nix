@@ -56,7 +56,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   postPatch = ''
     # Copy Cargo.lock to cargoRoot
     cp Cargo.lock crates/kftray-tauri/
-    
+
     # Disable tauri updater and bundling
     jq '.plugins.updater.endpoints = [] | .bundle.createUpdaterArtifacts = false' crates/kftray-tauri/tauri.conf.json \
       | sponge crates/kftray-tauri/tauri.conf.json
@@ -72,8 +72,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   nativeBuildInputs = [
     pnpm.configHook
     nodejs
+    cargo
     cargo-tauri.hook
     pkg-config
+    gobject-introspection
     wrapGAppsHook3
     perl
     jq
@@ -81,15 +83,23 @@ rustPlatform.buildRustPackage (finalAttrs: {
     addDriverRunpath
   ];
 
+
   buildInputs = [
     openssl
+    cairo
+    gdk-pixbuf
     webkitgtk_4_1
-    glib-networking
+    glib
     libappindicator
     librsvg
+    librsvg
     xdotool
+    harfbuzz
     file
     curl
+    pango
+    atkmm
+    libsoup_3
     wget
     gtk3
     libdrm
