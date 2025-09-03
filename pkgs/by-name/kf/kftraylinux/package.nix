@@ -7,6 +7,15 @@
   autoPatchelfHook,
   libayatana-appindicator,
   glib,
+  libGL,
+  libgbm,
+  wayland,
+  fontconfig,
+  freetype,
+  harfbuzz,
+  libthai,
+  fribidi,
+  xorg,
   nix-update-script,
 }:
 
@@ -46,11 +55,33 @@ in appimageTools.wrapType2 {
   ];
 
   extraPkgs = pkgs: with pkgs; [
-    # Runtime dependencies for GTK modules and system tray
-    libcanberra-gtk3
+    # System tray and GTK dependencies
     libayatana-appindicator
+    libcanberra-gtk3
     glib
+    
+    # Graphics and rendering dependencies
+    libGL
+    libgbm
+    wayland
+    fontconfig
+    freetype
+    harfbuzz
+    libthai
+    fribidi
+    
+    # X11 dependencies
+    xorg.libX11
+    xorg.libSM
+    xorg.libXext
+    xorg.libXrender
+    xorg.libXrandr
+    xorg.libXcomposite
+    xorg.libXdamage
+    xorg.libXfixes
   ];
+
+  multiArch = true;
 
   extraInstallCommands = ''
     # Install desktop file and icon
