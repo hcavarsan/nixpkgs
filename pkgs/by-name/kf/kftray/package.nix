@@ -3,7 +3,7 @@
   stdenv,
   fetchFromGitHub,
   rustPlatform,
-  at-spi2-atk
+  at-spi2-atk,
   cargo-tauri,
   cargo,
   nodejs,
