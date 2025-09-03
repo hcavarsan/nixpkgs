@@ -19,7 +19,7 @@
   glib-networking,
   libappindicator,
   librsvg,
-  libxdo,
+  xdotool,
   file,
   curl,
   wget,
@@ -81,7 +81,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     glib-networking
     libappindicator
     librsvg
-    libxdo
+    xdotool
     file
     curl
     wget
