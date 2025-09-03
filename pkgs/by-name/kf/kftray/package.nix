@@ -18,6 +18,11 @@
   webkitgtk_4_1,
   glib-networking,
   libappindicator,
+  librsvg,
+  libxdo,
+  file,
+  curl,
+  wget,
   nix-update-script,
 }:
 
@@ -75,6 +80,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
     glib-networking
     libappindicator
+    librsvg
+    libxdo
+    file
+    curl
+    wget
   ];
 
   # Skip tests - requires filesystem writes and system commands
@@ -84,7 +94,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   postInstall = ''
     wrapProgram $out/bin/kftray \
-      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libappindicator ]}
+      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libappindicator ]} \
+      --unset GTK_MODULES \
+      --set WEBKIT_DISABLE_COMPOSITING_MODE 1
   '';
 
   passthru.updateScript = nix-update-script { };
