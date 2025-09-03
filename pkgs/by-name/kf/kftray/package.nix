@@ -23,6 +23,10 @@
   file,
   curl,
   wget,
+  gtk3,
+  libdrm,
+  libgbm,
+  mesa,
   nix-update-script,
 }:
 
@@ -85,6 +89,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     file
     curl
     wget
+    gtk3
+    libdrm
+    libgbm
+    mesa
   ] ++ lib.optionals stdenv.hostPlatform.isLinux [
     # Additional Linux-specific dependencies for Wayland/X11
     stdenv.cc.cc.lib
