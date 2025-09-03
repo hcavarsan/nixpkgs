@@ -85,6 +85,9 @@ rustPlatform.buildRustPackage (finalAttrs: {
     file
     curl
     wget
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
+    # Additional Linux-specific dependencies for Wayland/X11
+    stdenv.cc.cc.lib
   ];
 
   # Skip tests - requires filesystem writes and system commands
@@ -96,7 +99,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     wrapProgram $out/bin/kftray \
       --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libappindicator ]} \
       --unset GTK_MODULES \
-      --set WEBKIT_DISABLE_COMPOSITING_MODE 1
+      --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
+      --set GDK_BACKEND "x11"
   '';
 
   passthru.updateScript = nix-update-script { };
