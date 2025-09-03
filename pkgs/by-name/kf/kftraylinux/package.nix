@@ -55,6 +55,13 @@ let
 in appimageTools.wrapType2 {
   inherit pname version src;
 
+  # Fix graphics and runtime environment
+  extraBwrapArgs = [
+    "--setenv GTK_PATH ${gtk3}/lib/gtk-3.0"
+    "--setenv WEBKIT_DISABLE_COMPOSITING_MODE 1"
+    "--setenv GDK_BACKEND x11"
+  ];
+
   extraInstallCommands = ''
     # Install desktop file and icon
     install -m 444 -D ${appimageContents}/kftray.desktop $out/share/applications/kftraylinux.desktop
@@ -100,9 +107,24 @@ in appimageTools.wrapType2 {
     librsvg
     libsoup_3
     mesa
+    mesa.drivers
     openssl
     pango
     webkitgtk_4_1
+    
+    # GTK modules to fix loading warnings
+    libcanberra-gtk3
+    polkit_gnome
+    
+    # Graphics and display dependencies
+    xorg.libX11
+    xorg.libXext
+    xorg.libXrender
+    xorg.libXrandr
+    xorg.libXcomposite
+    xorg.libXdamage
+    xorg.libXfixes
+    wayland
     
     # System utilities
     xdotool
