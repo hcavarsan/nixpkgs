@@ -3,13 +3,15 @@
   stdenv,
   fetchFromGitHub,
   rustPlatform,
-
+  at-spi2-atk
   cargo-tauri,
+  cargo,
   nodejs,
   pnpm,
   perl,
   jq,
   moreutils,
+  cairo,
 
   pkg-config,
   wrapGAppsHook3,
@@ -26,7 +28,15 @@
   gtk3,
   libdrm,
   libgbm,
+  gdk-pixbuf,
+  glib,
+  gobject-introspection,
+  harfbuzz,
   mesa,
+  pango,
+  libsoup_3,
+  atkmm,
+
   addDriverRunpath,
   nix-update-script,
 }:
@@ -91,7 +101,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     webkitgtk_4_1
     glib
     libappindicator
-    librsvg
+    at-spi2-atk
     librsvg
     xdotool
     harfbuzz
