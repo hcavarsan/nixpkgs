@@ -3,30 +3,8 @@
   stdenv,
   fetchurl,
   appimageTools,
-  at-spi2-atk,
-  cairo,
-  gdk-pixbuf,
-  glib,
-  gtk3,
-  harfbuzz,
-  libayatana-appindicator,
-  libdrm,
-  libgbm,
-  librsvg,
-  libsoup_3,
-  mesa,
-  openssl,
-  pango,
-  webkitgtk_4_1,
-  glib-networking,
-  xdotool,
-  file,
-  curl,
-  wget,
-  atkmm,
-  addDriverRunpath,
+  makeWrapper,
   autoPatchelfHook,
-  wrapGAppsHook3,
   nix-update-script,
 }:
 
@@ -48,23 +26,28 @@ let
 
   src = fetchurl (sources.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}"));
 
-  appimageContents = appimageTools.extract {
+  appimageContents = appimageTools.extractType2 {
     inherit pname version src;
   };
 
 in appimageTools.wrapType2 {
   inherit pname version src;
 
-  # Fix graphics and runtime environment
-  extraBwrapArgs = [
-    "--setenv GTK_PATH ${gtk3}/lib/gtk-3.0"
-    "--setenv WEBKIT_DISABLE_COMPOSITING_MODE 1"
-    "--setenv GDK_BACKEND x11"
+  nativeBuildInputs = [ 
+    makeWrapper 
+    autoPatchelfHook 
+  ];
+
+  extraPkgs = pkgs: with pkgs; [
+    # Minimal runtime dependencies
+    libcanberra-gtk3
   ];
 
   extraInstallCommands = ''
     # Install desktop file and icon
     install -m 444 -D ${appimageContents}/kftray.desktop $out/share/applications/kftraylinux.desktop
+    install -m 444 -D ${appimageContents}/kftray.png \
+      $out/share/icons/hicolor/512x512/apps/kftraylinux.png
     
     # Fix desktop file
     substituteInPlace $out/share/applications/kftraylinux.desktop \
@@ -72,74 +55,15 @@ in appimageTools.wrapType2 {
       --replace-warn 'Name=kftray' 'Name=KFtray Linux' \
       --replace-warn 'Icon=kftray' 'Icon=kftraylinux'
 
-    # Install icon
-    install -m 444 -D ${appimageContents}/kftray.png \
-      $out/share/pixmaps/kftraylinux.png
-
-    # Also install to hicolor theme
-    for size in 16 32 48 64 128 256 512; do
-      if [ -f ${appimageContents}/usr/share/icons/hicolor/''${size}x''${size}/apps/kftray.png ]; then
-        install -m 444 -D ${appimageContents}/usr/share/icons/hicolor/''${size}x''${size}/apps/kftray.png \
-          $out/share/icons/hicolor/''${size}x''${size}/apps/kftraylinux.png
-      fi
-    done
-
-    # Install scalable icon if available
-    if [ -f ${appimageContents}/usr/share/icons/hicolor/scalable/apps/kftray.svg ]; then
-      install -m 444 -D ${appimageContents}/usr/share/icons/hicolor/scalable/apps/kftray.svg \
-        $out/share/icons/hicolor/scalable/apps/kftraylinux.svg
-    fi
+    # Wrap with proper Wayland/X11 support following Caido pattern
+    wrapProgram $out/bin/kftraylinux \
+      --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
+      --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
   '';
-
-  # Runtime dependencies for Tauri v2 applications
-  extraPkgs = pkgs: with pkgs; [
-    # Core Tauri v2 dependencies
-    at-spi2-atk
-    cairo
-    gdk-pixbuf
-    glib
-    glib-networking
-    gtk3
-    harfbuzz
-    libayatana-appindicator
-    libdrm
-    libgbm
-    librsvg
-    libsoup_3
-    mesa
-    mesa.drivers
-    openssl
-    pango
-    webkitgtk_4_1
-    
-    # GTK modules to fix loading warnings
-    libcanberra-gtk3
-    polkit_gnome
-    
-    # Graphics and display dependencies
-    xorg.libX11
-    xorg.libXext
-    xorg.libXrender
-    xorg.libXrandr
-    xorg.libXcomposite
-    xorg.libXdamage
-    xorg.libXfixes
-    wayland
-    
-    # System utilities
-    xdotool
-    file
-    curl
-    wget
-    atkmm
-    
-    # Additional runtime libraries
-    stdenv.cc.cc.lib
-  ];
 
   passthru.updateScript = nix-update-script { };
 
-  meta = with lib; {
+  meta = {
     description = "kubectl port-forward manager (AppImage version) with traffic inspection, udp support, and proxy connections through k8s clusters";
     longDescription = ''
       kubectl port-forward manager with a user-friendly interface for managing multiple port-forward configurations.
@@ -147,17 +71,14 @@ in appimageTools.wrapType2 {
       
       This is the AppImage version of kftray, packaged for easy deployment without building from source.
       Built with Tauri v2 for improved performance and modern web technologies.
-      
-      Note: This application may require nixGL on non-NixOS Linux distributions due to WebKit EGL context issues.
-      If the application fails to start, install nixGL and run: nixGL kftraylinux
     '';
     homepage = "https://github.com/hcavarsan/kftray";
     downloadPage = "https://github.com/hcavarsan/kftray/releases";
     changelog = "https://github.com/hcavarsan/kftray/releases/tag/v${version}";
-    license = licenses.gpl3;
-    maintainers = with maintainers; [ hcavarsan ];
+    license = lib.licenses.gpl3;
+    maintainers = with lib.maintainers; [ hcavarsan ];
     platforms = [ "x86_64-linux" "aarch64-linux" ];
     mainProgram = "kftraylinux";
-    sourceProvenance = with sourceTypes; [ binaryNativeCode ];
+    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
   };
 }
