@@ -48,6 +48,11 @@ in appimageTools.wrapType2 {
       --replace-warn 'Exec=AppRun' 'Exec=env WEBKIT_DISABLE_COMPOSITING_MODE=1 LD_LIBRARY_PATH=${lib.makeLibraryPath [ libayatana-appindicator ]}:$LD_LIBRARY_PATH ${pname}' \
       --replace-warn 'Name=kftray' 'Name=KFtray Linux' \
       --replace-warn 'Icon=kftray' 'Icon=kftraylinux'
+
+    # Also fix the binary wrapper itself for command line usage
+    wrapProgram $out/bin/kftraylinux \
+      --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libayatana-appindicator ]}"
   '';
 
   passthru.updateScript = nix-update-script { };
