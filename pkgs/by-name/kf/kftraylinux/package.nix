@@ -99,7 +99,11 @@ in appimageTools.wrapType2 {
     wrapProgram $out/bin/kftraylinux \
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
       --unset GTK_MODULES \
-      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libayatana-appindicator glib ]}" \
+      --unset GTK_PATH \
+      --set GDK_BACKEND "x11" \
+      --set LIBGL_DRIVERS_PATH "${libGL}/lib/dri" \
+      --set __EGL_VENDOR_LIBRARY_DIRS "${libGL}/share/glvnd/egl_vendor.d" \
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libayatana-appindicator glib libGL libgbm ]}" \
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
   '';
 
