@@ -5,6 +5,8 @@
   appimageTools,
   makeWrapper,
   autoPatchelfHook,
+  libayatana-appindicator,
+  glib,
   nix-update-script,
 }:
 
@@ -38,9 +40,16 @@ in appimageTools.wrapType2 {
     autoPatchelfHook 
   ];
 
+  buildInputs = [
+    glib
+    libayatana-appindicator
+  ];
+
   extraPkgs = pkgs: with pkgs; [
-    # Minimal runtime dependencies
+    # Runtime dependencies for GTK modules and system tray
     libcanberra-gtk3
+    libayatana-appindicator
+    glib
   ];
 
   extraInstallCommands = ''
@@ -55,9 +64,10 @@ in appimageTools.wrapType2 {
       --replace-warn 'Name=kftray' 'Name=KFtray Linux' \
       --replace-warn 'Icon=kftray' 'Icon=kftraylinux'
 
-    # Wrap with proper Wayland/X11 support following Caido pattern
+    # Wrap with proper library paths and Wayland/X11 support
     wrapProgram $out/bin/kftraylinux \
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libayatana-appindicator glib ]}" \
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
   '';
 
