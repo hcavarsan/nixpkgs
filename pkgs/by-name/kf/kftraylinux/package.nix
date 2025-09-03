@@ -98,6 +98,7 @@ in appimageTools.wrapType2 {
     # Wrap with proper library paths and Wayland/X11 support
     wrapProgram $out/bin/kftraylinux \
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
+      --unset GTK_MODULES \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libayatana-appindicator glib ]}" \
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
   '';
