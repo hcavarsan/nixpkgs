@@ -5,17 +5,22 @@
   appimageTools,
   makeWrapper,
   autoPatchelfHook,
-  libayatana-appindicator,
+  # Tauri v2 dependencies from wiki
+  at-spi2-atk,
+  atkmm,
+  cairo,
+  gdk-pixbuf,
   glib,
-  libGL,
-  libgbm,
-  wayland,
-  fontconfig,
-  freetype,
+  gtk3,
   harfbuzz,
+  libayatana-appindicator,
+  libcanberra-gtk3,
+  librsvg,
+  libsoup_3,
   libthai,
-  fribidi,
-  xorg,
+  openssl,
+  pango,
+  webkitgtk_4_1,
   nix-update-script,
 }:
 
@@ -52,58 +57,49 @@ in appimageTools.wrapType2 {
   buildInputs = [
     glib
     libayatana-appindicator
+    libcanberra-gtk3
   ];
 
   extraPkgs = pkgs: with pkgs; [
-    # System tray and GTK dependencies
+    # Tauri v2 dependencies (following wiki recommendations)
+    at-spi2-atk
+    atkmm
+    cairo
+    gdk-pixbuf
+    glib
+    gtk3
+    harfbuzz
     libayatana-appindicator
     libcanberra-gtk3
-    glib
-    
-    # Graphics and rendering dependencies
-    libGL
-    libgbm
-    wayland
-    fontconfig
-    freetype
-    harfbuzz
+    librsvg
+    libsoup_3
     libthai
-    fribidi
-    
-    # X11 dependencies
-    xorg.libX11
-    xorg.libSM
-    xorg.libXext
-    xorg.libXrender
-    xorg.libXrandr
-    xorg.libXcomposite
-    xorg.libXdamage
-    xorg.libXfixes
+    openssl
+    pango
+    webkitgtk_4_1
   ];
 
   multiArch = true;
 
   extraInstallCommands = ''
-    # Install desktop file and icon
-    install -m 444 -D ${appimageContents}/kftray.desktop $out/share/applications/kftraylinux.desktop
-    install -m 444 -D ${appimageContents}/kftray.png \
-      $out/share/icons/hicolor/512x512/apps/kftraylinux.png
+    # Rename binary to avoid conflicts with original kftray
+    mv $out/bin/${pname}-${version} $out/bin/${pname}
     
-    # Fix desktop file
+    # Install desktop file and icon (following working v1 example)
+    install -Dm444 ${appimageContents}/kftray.desktop $out/share/applications/kftraylinux.desktop
+    install -Dm444 ${appimageContents}/kftray.png $out/share/pixmaps/kftraylinux.png
+    
+    # Fix desktop file to point to our binary
     substituteInPlace $out/share/applications/kftraylinux.desktop \
-      --replace-warn 'Exec=kftray' 'Exec=${pname}' \
-      --replace-warn 'Name=kftray' 'Name=KFtray Linux' \
-      --replace-warn 'Icon=kftray' 'Icon=kftraylinux'
+      --replace 'Exec=AppRun' "Exec=$out/bin/${pname}" \
+      --replace 'Name=kftray' 'Name=KFtray Linux' \
+      --replace 'Icon=kftray' 'Icon=kftraylinux'
 
     # Wrap with proper library paths and Wayland/X11 support
     wrapProgram $out/bin/kftraylinux \
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
       --unset GTK_MODULES \
-      --unset GTK_PATH \
-      --set GDK_BACKEND "x11" \
-      --set LIBGL_DRIVERS_PATH "${libGL}/lib/dri" \
-      --set __EGL_VENDOR_LIBRARY_DIRS "${libGL}/share/glvnd/egl_vendor.d" \
-      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libayatana-appindicator glib libGL libgbm ]}" \
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libayatana-appindicator glib ]}" \
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
   '';
 
