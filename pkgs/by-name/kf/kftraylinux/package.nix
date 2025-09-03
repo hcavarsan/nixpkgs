@@ -43,17 +43,11 @@ in appimageTools.wrapType2 {
     install -m 444 -D ${appimageContents}/kftray.png \
       $out/share/icons/hicolor/512x512/apps/kftraylinux.png
     
-    # Fix desktop file to point to our binary
+    # Fix desktop file - set WEBKIT_DISABLE_COMPOSITING_MODE directly in Exec line like semtex example
     substituteInPlace $out/share/applications/kftraylinux.desktop \
-      --replace-warn 'Exec=AppRun' 'Exec=${pname}' \
+      --replace-warn 'Exec=AppRun' 'Exec=env WEBKIT_DISABLE_COMPOSITING_MODE=1 LD_LIBRARY_PATH=${lib.makeLibraryPath [ libayatana-appindicator ]}:$LD_LIBRARY_PATH ${pname}' \
       --replace-warn 'Name=kftray' 'Name=KFtray Linux' \
       --replace-warn 'Icon=kftray' 'Icon=kftraylinux'
-
-    # Follow Caido/Session-desktop wrapper pattern + system tray library
-    wrapProgram $out/bin/kftraylinux \
-      --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
-      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libayatana-appindicator ]}" \
-      --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
   '';
 
   passthru.updateScript = nix-update-script { };
