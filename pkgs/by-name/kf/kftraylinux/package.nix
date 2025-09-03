@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   fetchurl,
   appimageTools,
   makeWrapper,
