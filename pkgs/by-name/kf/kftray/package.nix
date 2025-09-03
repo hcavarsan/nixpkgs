@@ -19,7 +19,7 @@
   openssl,
   webkitgtk_4_1,
   glib-networking,
-  libappindicator,
+  libayatana-appindicator,
   librsvg,
   xdotool,
   file,
@@ -67,6 +67,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     # Copy Cargo.lock to cargoRoot
     cp Cargo.lock crates/kftray-tauri/
 
+    # Fix libappindicator path substitution for Linux
+    ${lib.optionalString stdenv.hostPlatform.isLinux ''
+      substituteInPlace $cargoDepsCopy/libappindicator-sys-*/src/lib.rs \
+        --replace "libayatana-appindicator3.so.1" "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
+    ''}
+
     # Disable tauri updater and bundling
     jq '.plugins.updater.endpoints = [] | .bundle.createUpdaterArtifacts = false' crates/kftray-tauri/tauri.conf.json \
       | sponge crates/kftray-tauri/tauri.conf.json
@@ -100,7 +106,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
     gdk-pixbuf
     webkitgtk_4_1
     glib
-    libappindicator
+    libayatana-appindicator
     at-spi2-atk
     librsvg
     xdotool
@@ -128,7 +134,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   postInstall = ''
     wrapProgram $out/bin/kftray \
       --prefix LD_LIBRARY_PATH : ${addDriverRunpath.driverLink}/lib \
-      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libappindicator ]} \
+      --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ libayatana-appindicator ]} \
       --unset GTK_MODULES \
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
       --set GDK_BACKEND "x11"
