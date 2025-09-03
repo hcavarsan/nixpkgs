@@ -4,6 +4,7 @@
   fetchurl,
   appimageTools,
   makeWrapper,
+  libayatana-appindicator,
   nix-update-script,
 }:
 
@@ -34,6 +35,8 @@ in appimageTools.wrapType2 {
 
   nativeBuildInputs = [ makeWrapper ];
 
+  extraPkgs = pkgs: [ pkgs.libayatana-appindicator ];
+
   extraInstallCommands = ''
     # Install desktop file and icon (following Caido pattern)
     install -m 444 -D ${appimageContents}/kftray.desktop $out/share/applications/kftraylinux.desktop
@@ -46,9 +49,10 @@ in appimageTools.wrapType2 {
       --replace-warn 'Name=kftray' 'Name=KFtray Linux' \
       --replace-warn 'Icon=kftray' 'Icon=kftraylinux'
 
-    # Follow Caido/Session-desktop wrapper pattern
+    # Follow Caido/Session-desktop wrapper pattern + system tray library
     wrapProgram $out/bin/kftraylinux \
       --set WEBKIT_DISABLE_COMPOSITING_MODE 1 \
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libayatana-appindicator ]}" \
       --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}"
   '';
 
